@@ -1374,9 +1374,7 @@ export default function CipherRiskDashboard() {
 
         </main>
 
-      </div>
-
-      {/* Floating Logs Modal Overlay */}
+       {/* Floating Logs Modal Overlay */}
       {consoleOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
           <div className="bg-white border border-slate-250 w-full max-w-4xl h-[550px] rounded-2xl flex flex-col overflow-hidden shadow-2xl">
@@ -1410,7 +1408,7 @@ export default function CipherRiskDashboard() {
                           ? 'bg-purple-950 text-purple-400 border border-purple-800/30' 
                           : log.type === 'CHAIN' 
                             ? 'bg-indigo-950 text-indigo-400 border border-indigo-800/30' 
-                            : 'bg-slate-900 text-slate-400 border border-slate-800/30'
+                            : 'bg-slate-905 text-slate-400 border border-slate-800/30'
                       }`}>
                         {log.type}
                       </span>
@@ -1435,6 +1433,37 @@ export default function CipherRiskDashboard() {
           </div>
         </div>
       )}
+
+      {/* Footer credit */}
+      <footer className="w-full py-6 text-center text-xs text-slate-400 border-t border-slate-200/55 mt-auto bg-slate-50/20 backdrop-blur">
+        <strong>made with love by moinuddin9777</strong>
+      </footer>
+
+      {/* Floating QR Code & Linktree Link */}
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2 group">
+        <div className="hidden group-hover:flex flex-col items-center p-3 bg-white border border-slate-200 rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <img 
+            src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://linktr.ee/moinuddin9777" 
+            alt="Linktree QR" 
+            className="w-28 h-28"
+          />
+          <span className="text-[10px] font-bold text-slate-650 mt-2">Scan for Contact</span>
+        </div>
+
+        <a 
+          href="https://linktr.ee/moinuddin9777" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="p-3 bg-indigo-650 text-white rounded-full shadow-lg shadow-indigo-600/30 hover:bg-indigo-700 hover:scale-105 transition-all flex items-center justify-center cursor-pointer"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18h2v2h-2zM18 14h2v2h-2z" />
+          </svg>
+        </a>
+      </div>
 
     </div>
   );
