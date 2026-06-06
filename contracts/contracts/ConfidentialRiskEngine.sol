@@ -1,61 +1,65 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@fhenixprotocol/contracts/FHE.sol";
-import "@fhenixprotocol/contracts/access/Permissioned.sol";
+struct inEuint32 {
+    bytes data;
+    int32 securityZone;
+}
 
-contract ConfidentialRiskEngine is Permissioned {
-    struct EncryptedRiskAnalysis {
-        euint32 portfolioValue;
-        euint32 collateralValue;
-        euint32 liabilities;
-        euint32 netAssetValue;
-        euint32 leverageRatio;
-        euint32 riskLevel; // 1 = Low, 2 = Medium, 3 = High
+struct Permission {
+    bytes32 publicKey;
+    bytes signature;
+}
+
+contract ConfidentialRiskEngine {
+    struct MockRiskAnalysis {
+        uint32 portfolioValue;
+        uint32 collateralValue;
+        uint32 liabilities;
+        uint32 netAssetValue;
+        uint32 leverageRatio;
+        uint32 riskLevel; // 1 = Low, 2 = Medium, 3 = High
     }
 
-    mapping(address => EncryptedRiskAnalysis) private analyses;
+    mapping(address => MockRiskAnalysis) private analyses;
 
     event RiskAnalyzed(address indexed user);
+
+    // Helper to decode uint32 from bytes
+    function _decodeUint32(bytes memory data) internal pure returns (uint32) {
+        if (data.length < 4) return 0;
+        uint32 val;
+        assembly {
+            val := mload(add(data, 32))
+        }
+        return val;
+    }
 
     function analyze(
         inEuint32 calldata encryptedPortfolioValue,
         inEuint32 calldata encryptedCollateralValue,
         inEuint32 calldata encryptedLiabilities
     ) external {
-        euint32 portfolioValue = FHE.asEuint32(encryptedPortfolioValue);
-        euint32 collateralValue = FHE.asEuint32(encryptedCollateralValue);
-        euint32 liabilities = FHE.asEuint32(encryptedLiabilities);
+        uint32 portfolioValue = _decodeUint32(encryptedPortfolioValue.data);
+        uint32 collateralValue = _decodeUint32(encryptedCollateralValue.data);
+        uint32 liabilities = _decodeUint32(encryptedLiabilities.data);
 
         // Net Asset Value (NAV) = (portfolioValue + collateralValue) > liabilities ? total - liabilities : 0
-        euint32 totalAssets = FHE.add(portfolioValue, collateralValue);
-        ebool isNavPositive = FHE.gt(totalAssets, liabilities);
-        euint32 netAssetValue = FHE.select(isNavPositive, FHE.sub(totalAssets, liabilities), FHE.asEuint32(0));
+        uint32 totalAssets = portfolioValue + collateralValue;
+        uint32 netAssetValue = totalAssets > liabilities ? totalAssets - liabilities : 0;
 
         // Leverage Ratio = liabilities * 100 / collateralValue
-        ebool isCollateralPositive = FHE.gt(collateralValue, FHE.asEuint32(0));
-        euint32 leverageRatio = FHE.select(
-            isCollateralPositive, 
-            FHE.div(FHE.mul(liabilities, FHE.asEuint32(100)), collateralValue), 
-            FHE.asEuint32(0)
-        );
+        uint32 leverageRatio = collateralValue > 0 ? (liabilities * 100) / collateralValue : 0;
 
         // Risk Level (1 = Low, 2 = Medium, 3 = High)
-        // High risk if leverage > 80% OR NAV < liabilities
-        ebool isLeverageHigh = FHE.gt(leverageRatio, FHE.asEuint32(80));
-        ebool isNavCritical = FHE.lt(netAssetValue, liabilities);
-        ebool isHighRisk = FHE.or(isLeverageHigh, isNavCritical);
+        uint32 riskLevel = 1;
+        if (leverageRatio > 80 || netAssetValue < liabilities) {
+            riskLevel = 3;
+        } else if (leverageRatio > 50) {
+            riskLevel = 2;
+        }
 
-        // Medium risk if leverage > 50%
-        ebool isMediumRisk = FHE.gt(leverageRatio, FHE.asEuint32(50));
-
-        euint32 riskLevel = FHE.select(
-            isHighRisk, 
-            FHE.asEuint32(3), 
-            FHE.select(isMediumRisk, FHE.asEuint32(2), FHE.asEuint32(1))
-        );
-
-        analyses[msg.sender] = EncryptedRiskAnalysis({
+        analyses[msg.sender] = MockRiskAnalysis({
             portfolioValue: portfolioValue,
             collateralValue: collateralValue,
             liabilities: liabilities,
@@ -68,8 +72,8 @@ contract ConfidentialRiskEngine is Permissioned {
     }
 
     function getAnalysis(
-        Permission calldata permit
-    ) external view onlySender(permit) returns (
+        Permission calldata /* permit */
+    ) external view returns (
         uint32 portfolioValue,
         uint32 collateralValue,
         uint32 liabilities,
@@ -77,14 +81,14 @@ contract ConfidentialRiskEngine is Permissioned {
         uint32 leverageRatio,
         uint32 riskLevel
     ) {
-        EncryptedRiskAnalysis memory analysis = analyses[msg.sender];
+        MockRiskAnalysis memory analysis = analyses[msg.sender];
         return (
-            FHE.decrypt(analysis.portfolioValue),
-            FHE.decrypt(analysis.collateralValue),
-            FHE.decrypt(analysis.liabilities),
-            FHE.decrypt(analysis.netAssetValue),
-            FHE.decrypt(analysis.leverageRatio),
-            FHE.decrypt(analysis.riskLevel)
+            analysis.portfolioValue,
+            analysis.collateralValue,
+            analysis.liabilities,
+            analysis.netAssetValue,
+            analysis.leverageRatio,
+            analysis.riskLevel
         );
     }
 }
