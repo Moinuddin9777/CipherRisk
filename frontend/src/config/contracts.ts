@@ -1,5 +1,5 @@
-export const TRANSPARENT_RISK_ENGINE_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Deployed Sepolia/Holesky address
-export const CONFIDENTIAL_RISK_ENGINE_ADDRESS = "0xeA30c4B8b44078Bbf8a6ef5b9f1eC1626C7848D9"; // Deployed Helium address
+export const TRANSPARENT_RISK_ENGINE_ADDRESS = "0x125AaC5aeFf0fb76F08236384c54518D44bF41Df"; // Deployed Sepolia/Holesky address
+export const CONFIDENTIAL_RISK_ENGINE_ADDRESS = "0x7849E2Bb306ab4bAeE523922222a2Fe3A4af3B8f"; // Deployed Helium address
 
 export const TRANSPARENT_RISK_ENGINE_ABI = [
   {

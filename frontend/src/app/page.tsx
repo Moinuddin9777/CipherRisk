@@ -346,9 +346,9 @@ export default function CipherRiskDashboard() {
       
       addLog('FHE', `Encrypting Portfolio (${portfolioValue}), Collateral (${collateralValue}), Liabilities (${liabilities}) locally...`);
       const encrypted = await fheClient.encryptInputs([
-        Encryptable.uint32(Number(portfolioValue)),
-        Encryptable.uint32(Number(collateralValue)),
-        Encryptable.uint32(Number(liabilities))
+        Encryptable.uint32(BigInt(portfolioValue)),
+        Encryptable.uint32(BigInt(collateralValue)),
+        Encryptable.uint32(BigInt(liabilities))
       ]).execute();
 
       addLog('FHE', 'Local TFHE encryption succeeded. Raw ciphertexts packed.', {
@@ -1373,6 +1373,7 @@ export default function CipherRiskDashboard() {
           )}
 
         </main>
+      </div>
 
        {/* Floating Logs Modal Overlay */}
       {consoleOpen && (
